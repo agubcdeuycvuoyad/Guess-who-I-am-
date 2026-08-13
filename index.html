@@ -1,641 +1,1341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Who Am I?</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg, #080812, #25104a);
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.game {
+    width: 750px;
+    max-width: 100%;
+    background: #111122;
+    border-radius: 25px;
+    padding: 30px;
+    text-align: center;
+    box-shadow: 0 0 40px rgba(100,70,255,.3);
+}
+
+h1 {
+    font-size: 48px;
+    margin: 0 0 10px;
+}
+
+.subtitle {
+    color: #aaa;
+}
+
+.stats {
+    display: grid;
+    grid-template-columns: repeat(4,1fr);
+    gap: 10px;
+    margin: 25px 0;
+}
+
+.stat {
+    background: #1d1d35;
+    padding: 13px;
+    border-radius: 12px;
+}
+
+.category {
+    color: #b78cff;
+    font-weight: bold;
+    margin: 15px;
+}
+
+.clue {
+    background: #1b1b31;
+    padding: 16px;
+    border-radius: 12px;
+    margin: 10px 0;
+    text-align: left;
+}
+
+input {
+    width: 100%;
+    padding: 15px;
+    margin-top: 15px;
+    border: 1px solid #555577;
+    border-radius: 10px;
+    background: #080812;
+    color: white;
+    font-size: 17px;
+}
+
+button {
+    border: none;
+    border-radius: 12px;
+    padding: 15px 30px;
+    margin-top: 15px;
+    background: linear-gradient(90deg,#4d5cff,#a13cff);
+    color: white;
+    font-size: 17px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+button:hover {
+    opacity: .9;
+}
+
+button:active {
+    transform: scale(.96);
+}
+
+.hidden {
+    display: none !important;
+}
+
+#message {
+    min-height: 30px;
+    margin-top: 15px;
+    font-weight: bold;
+}
+
+@media(max-width:600px) {
+    h1 {
+        font-size: 36px;
+    }
+
+    .stats {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="game">
+
+<div id="startScreen">
+
+    <h1>🕵️ WHO AM I?</h1>
+
+    <p class="subtitle">
+        Guess the famous person from the clues!
+    </p>
+
+    <p>Guess earlier to earn more points.</p>
+    <p>❤️ You have 3 lives.</p>
+
+    <button onclick="startGame()">
+        START GAME
+    </button>
+
+</div>
+
+
+<div id="gameScreen" class="hidden">
+
+    <h1>🕵️ WHO AM I?</h1>
+
+    <div class="stats">
+
+        <div class="stat">
+            🏆 Score<br>
+            <b id="score">0</b>
+        </div>
+
+        <div class="stat">
+            🔥 Streak<br>
+            <b id="streak">0</b>
+        </div>
+
+        <div class="stat">
+            ❤️ Lives<br>
+            <b id="lives">3</b>
+        </div>
+
+        <div class="stat">
+            🎯 Round<br>
+            <b id="round">0</b>/10
+        </div>
+
+    </div>
+
+    <div id="category" class="category"></div>
+
+    <div id="clues"></div>
+
+    <input
+        id="answer"
+        placeholder="Who am I?"
+        autocomplete="off"
+    >
+
+    <button onclick="guess()">
+        GUESS
+    </button>
+
+    <button
+        id="nextButton"
+        class="hidden"
+        onclick="nextRound()">
+        NEXT →
+    </button>
+
+    <div id="message"></div>
+
+</div>
+
+
+<div id="gameOver" class="hidden">
+
+    <h1>GAME OVER</h1>
+
+    <p>Final Score</p>
+
+    <h2 id="finalScore">0</h2>
+
+    <p>
+        🏆 Best Score:
+        <b id="bestScore">0</b>
+    </p>
+
+    <button onclick="startGame()">
+        PLAY AGAIN
+    </button>
+
+</div>
+
+</div>
+
+
+<script>
+
+/* =====================================================
+   100 PEOPLE
+===================================================== */
+
 const people = [
 
-/* ⚽ FOOTBALL */
+/* FOOTBALL */
 
 {
-    name: "Cristiano Ronaldo",
-    category: "⚽ Football",
-    clues: [
-        "I was born in Madeira.",
-        "I started my senior career at Sporting CP.",
-        "I became a Manchester United star.",
-        "I have won multiple Champions League titles.",
-        "I am one of football's greatest goalscorers."
-    ]
+name:"Cristiano Ronaldo",
+category:"⚽ Football",
+clues:[
+"I was born in Madeira.",
+"I started my senior career at Sporting CP.",
+"I became a Manchester United star.",
+"I have won multiple Champions League titles.",
+"I am one of football's greatest goalscorers."
+]
 },
 
 {
-    name: "Lionel Messi",
-    category: "⚽ Football",
-    clues: [
-        "I was born in Rosario, Argentina.",
-        "I moved to Spain as a young player.",
-        "I became a Barcelona legend.",
-        "I won the 2022 World Cup.",
-        "I have won multiple Ballon d'Or awards."
-    ]
+name:"Lionel Messi",
+category:"⚽ Football",
+clues:[
+"I was born in Rosario.",
+"I moved to Spain as a young player.",
+"I became a Barcelona legend.",
+"I won the 2022 World Cup.",
+"I have won multiple Ballon d'Or awards."
+]
 },
 
 {
-    name: "Neymar",
-    category: "⚽ Football",
-    clues: [
-        "I started my professional career in Brazil.",
-        "I became famous at Santos.",
-        "I played alongside Messi at Barcelona.",
-        "I later moved to Paris Saint-Germain.",
-        "I have represented Brazil."
-    ]
+name:"Neymar",
+category:"⚽ Football",
+clues:[
+"I am Brazilian.",
+"I became famous at Santos.",
+"I played alongside Messi at Barcelona.",
+"I later played for PSG.",
+"I am known for my dribbling."
+]
 },
 
 {
-    name: "Kylian Mbappe",
-    category: "⚽ Football",
-    clues: [
-        "I am French.",
-        "I became famous at Monaco.",
-        "I played for Paris Saint-Germain.",
-        "I won the World Cup as a teenager.",
-        "I joined Real Madrid in 2024."
-    ]
+name:"Kylian Mbappe",
+category:"⚽ Football",
+clues:[
+"I am French.",
+"I became famous at Monaco.",
+"I played for PSG.",
+"I won a World Cup as a teenager.",
+"I joined Real Madrid in 2024."
+]
 },
 
 {
-    name: "Erling Haaland",
-    category: "⚽ Football",
-    clues: [
-        "I was born in England but represent Norway.",
-        "I became famous at Red Bull Salzburg.",
-        "I played for Borussia Dortmund.",
-        "I joined Manchester City.",
-        "I am known for scoring lots of goals."
-    ]
+name:"Erling Haaland",
+category:"⚽ Football",
+clues:[
+"I represent Norway.",
+"I became famous at Salzburg.",
+"I played for Borussia Dortmund.",
+"I joined Manchester City.",
+"I am known for scoring many goals."
+]
 },
 
 {
-    name: "Kevin De Bruyne",
-    category: "⚽ Football",
-    clues: [
-        "I am Belgian.",
-        "I played for Chelsea early in my career.",
-        "I became a star at Manchester City.",
-        "I am known for incredible passing.",
-        "I have won multiple Premier League titles."
-    ]
+name:"Kevin De Bruyne",
+category:"⚽ Football",
+clues:[
+"I am Belgian.",
+"I played for Chelsea.",
+"I became a Manchester City star.",
+"I am famous for my passing.",
+"I have won Premier League titles."
+]
 },
 
 {
-    name: "Mohamed Salah",
-    category: "⚽ Football",
-    clues: [
-        "I am Egyptian.",
-        "I played for Chelsea.",
-        "I became a Liverpool star.",
-        "I am known for scoring with my left foot.",
-        "I have won the Premier League."
-    ]
+name:"Mohamed Salah",
+category:"⚽ Football",
+clues:[
+"I am Egyptian.",
+"I played for Chelsea.",
+"I became a Liverpool star.",
+"I am left-footed.",
+"I have won the Premier League."
+]
 },
 
 {
-    name: "Luka Modric",
-    category: "⚽ Football",
-    clues: [
-        "I am Croatian.",
-        "I played for Tottenham Hotspur.",
-        "I became a Real Madrid legend.",
-        "I won the 2018 Ballon d'Or.",
-        "I helped Croatia reach a World Cup final."
-    ]
+name:"Luka Modric",
+category:"⚽ Football",
+clues:[
+"I am Croatian.",
+"I played for Tottenham.",
+"I became a Real Madrid legend.",
+"I won the 2018 Ballon d'Or.",
+"I helped Croatia reach a World Cup final."
+]
 },
 
 {
-    name: "Zinedine Zidane",
-    category: "⚽ Football",
-    clues: [
-        "I am French.",
-        "I played for Juventus.",
-        "I became a Real Madrid player.",
-        "I won the 1998 World Cup.",
-        "I later managed Real Madrid."
-    ]
+name:"Zinedine Zidane",
+category:"⚽ Football",
+clues:[
+"I am French.",
+"I played for Juventus.",
+"I became a Real Madrid player.",
+"I won the 1998 World Cup.",
+"I later managed Real Madrid."
+]
 },
 
 {
-    name: "Ronaldinho",
-    category: "⚽ Football",
-    clues: [
-        "I am Brazilian.",
-        "I played for Paris Saint-Germain.",
-        "I became famous at Barcelona.",
-        "I won the 2002 World Cup.",
-        "I was famous for my tricks and smile."
-    ]
+name:"Ronaldinho",
+category:"⚽ Football",
+clues:[
+"I am Brazilian.",
+"I played for PSG.",
+"I became famous at Barcelona.",
+"I won the 2002 World Cup.",
+"I was famous for my tricks."
+]
 },
 
 {
-    name: "David Beckham",
-    category: "⚽ Football",
-    clues: [
-        "I came through Manchester United's academy.",
-        "I became famous for free kicks.",
-        "I played for Real Madrid.",
-        "I played in the MLS.",
-        "I later became an owner of Inter Miami."
-    ]
+name:"David Beckham",
+category:"⚽ Football",
+clues:[
+"I came through Manchester United's academy.",
+"I was famous for free kicks.",
+"I played for Real Madrid.",
+"I played in the MLS.",
+"I later became an Inter Miami owner."
+]
 },
 
 {
-    name: "Sergio Ramos",
-    category: "⚽ Football",
-    clues: [
-        "I am Spanish.",
-        "I played for Real Madrid.",
-        "I was known for scoring important headers.",
-        "I won the 2010 World Cup.",
-        "I was a long-time defender for Spain."
-    ]
+name:"Sergio Ramos",
+category:"⚽ Football",
+clues:[
+"I am Spanish.",
+"I played for Real Madrid.",
+"I was a defender.",
+"I won the 2010 World Cup.",
+"I was known for scoring important goals."
+]
 },
 
 {
-    name: "Thierry Henry",
-    category: "⚽ Football",
-    clues: [
-        "I am French.",
-        "I became an Arsenal legend.",
-        "I was famous for my pace.",
-        "I won the 1998 World Cup.",
-        "I later worked as a football coach."
-    ]
+name:"Thierry Henry",
+category:"⚽ Football",
+clues:[
+"I am French.",
+"I became an Arsenal legend.",
+"I was famous for my pace.",
+"I won the 1998 World Cup.",
+"I later became a coach."
+]
 },
 
 {
-    name: "Xavi",
-    category: "⚽ Football",
-    clues: [
-        "I am Spanish.",
-        "I spent most of my career at Barcelona.",
-        "I was known for passing.",
-        "I won the 2010 World Cup.",
-        "I later managed Barcelona."
-    ]
+name:"Xavi",
+category:"⚽ Football",
+clues:[
+"I am Spanish.",
+"I spent most of my career at Barcelona.",
+"I was known for passing.",
+"I won the 2010 World Cup.",
+"I later managed Barcelona."
+]
 },
 
 {
-    name: "Andres Iniesta",
-    category: "⚽ Football",
-    clues: [
-        "I am Spanish.",
-        "I played for Barcelona.",
-        "I was known for my midfield skills.",
-        "I scored the 2010 World Cup final winner.",
-        "I played alongside Xavi."
-    ]
+name:"Andres Iniesta",
+category:"⚽ Football",
+clues:[
+"I am Spanish.",
+"I played for Barcelona.",
+"I was a midfielder.",
+"I scored the 2010 World Cup final winner.",
+"I played alongside Xavi."
+]
 },
 
-
-/* 🏏 CRICKET */
-
-{
-    name: "Virat Kohli",
-    category: "🏏 Cricket",
-    clues: [
-        "I was born in Delhi.",
-        "I captained India at youth level.",
-        "I helped India win the 2008 U19 World Cup.",
-        "I became one of cricket's greatest run scorers.",
-        "I am known for my aggressive batting."
-    ]
-},
+/* CRICKET */
 
 {
-    name: "MS Dhoni",
-    category: "🏏 Cricket",
-    clues: [
-        "I was born in Ranchi.",
-        "I am a wicketkeeper-batter.",
-        "I became India's captain.",
-        "I won the 2007 T20 World Cup.",
-        "I led India to the 2011 ODI World Cup."
-    ]
+name:"Virat Kohli",
+category:"🏏 Cricket",
+clues:[
+"I was born in Delhi.",
+"I captained India at youth level.",
+"I helped India win the 2008 U19 World Cup.",
+"I became one of cricket's greatest run scorers.",
+"I am known for aggressive batting."
+]
 },
 
 {
-    name: "Sachin Tendulkar",
-    category: "🏏 Cricket",
-    clues: [
-        "I made my international debut as a teenager.",
-        "I played for India.",
-        "I scored 100 international centuries.",
-        "I won the 2011 World Cup.",
-        "I am known as the Little Master."
-    ]
+name:"MS Dhoni",
+category:"🏏 Cricket",
+clues:[
+"I was born in Ranchi.",
+"I am a wicketkeeper-batter.",
+"I became India's captain.",
+"I won the 2007 T20 World Cup.",
+"I led India to the 2011 ODI World Cup."
+]
 },
 
 {
-    name: "Rohit Sharma",
-    category: "🏏 Cricket",
-    clues: [
-        "I play for India.",
-        "I am a right-handed batter.",
-        "I have scored multiple ODI double centuries.",
-        "I captained India.",
-        "I am famous for my pull shot."
-    ]
+name:"Sachin Tendulkar",
+category:"🏏 Cricket",
+clues:[
+"I made my international debut as a teenager.",
+"I played for India.",
+"I scored 100 international centuries.",
+"I won the 2011 World Cup.",
+"I am known as the Little Master."
+]
 },
 
 {
-    name: "Jasprit Bumrah",
-    category: "🏏 Cricket",
-    clues: [
-        "I am an Indian fast bowler.",
-        "I have an unusual bowling action.",
-        "I became famous playing for Mumbai Indians.",
-        "I am known for yorkers.",
-        "I have become one of India's leading fast bowlers."
-    ]
+name:"Rohit Sharma",
+category:"🏏 Cricket",
+clues:[
+"I play for India.",
+"I am a right-handed batter.",
+"I have scored ODI double centuries.",
+"I captained India.",
+"I am famous for my pull shot."
+]
 },
 
 {
-    name: "Ben Stokes",
-    category: "🏏 Cricket",
-    clues: [
-        "I represent England.",
-        "I am an all-rounder.",
-        "I played a famous role in England's 2019 World Cup win.",
-        "I scored a famous Test innings at Headingley.",
-        "I have captained England's Test team."
-    ]
+name:"Jasprit Bumrah",
+category:"🏏 Cricket",
+clues:[
+"I am an Indian fast bowler.",
+"I have an unusual bowling action.",
+"I became famous playing for Mumbai Indians.",
+"I am known for yorkers.",
+"I am one of India's leading fast bowlers."
+]
 },
 
 {
-    name: "Babar Azam",
-    category: "🏏 Cricket",
-    clues: [
-        "I am Pakistani.",
-        "I am a right-handed batter.",
-        "I have been ranked among the world's best batters.",
-        "I have captained Pakistan.",
-        "I am known for my cover drives."
-    ]
+name:"Ben Stokes",
+category:"🏏 Cricket",
+clues:[
+"I represent England.",
+"I am an all-rounder.",
+"I played a famous role in England's 2019 World Cup win.",
+"I scored a famous Test innings at Headingley.",
+"I have captained England's Test team."
+]
 },
 
 {
-    name: "Pat Cummins",
-    category: "🏏 Cricket",
-    clues: [
-        "I am Australian.",
-        "I am a fast bowler.",
-        "I became Australia's Test captain.",
-        "I helped Australia win the 2023 World Test Championship.",
-        "I captained Australia during the 2023 World Cup."
-    ]
+name:"Babar Azam",
+category:"🏏 Cricket",
+clues:[
+"I am Pakistani.",
+"I am a right-handed batter.",
+"I have been ranked among the world's best batters.",
+"I have captained Pakistan.",
+"I am known for my cover drives."
+]
 },
 
 {
-    name: "AB de Villiers",
-    category: "🏏 Cricket",
-    clues: [
-        "I am South African.",
-        "I played international cricket for South Africa.",
-        "I became famous in the IPL.",
-        "I played for Royal Challengers Bengaluru.",
-        "I was nicknamed Mr. 360."
-    ]
+name:"Pat Cummins",
+category:"🏏 Cricket",
+clues:[
+"I am Australian.",
+"I am a fast bowler.",
+"I became Australia's Test captain.",
+"I helped Australia win the 2023 World Test Championship.",
+"I captained Australia during the 2023 World Cup."
+]
 },
 
 {
-    name: "Shane Warne",
-    category: "🏏 Cricket",
-    clues: [
-        "I was Australian.",
-        "I was a leg-spinner.",
-        "I played for Australia.",
-        "I became famous for the Ball of the Century.",
-        "I was one of cricket's greatest spin bowlers."
-    ]
-},
-
-
-/* 🏀 BASKETBALL */
-
-{
-    name: "Michael Jordan",
-    category: "🏀 Basketball",
-    clues: [
-        "I played for the Chicago Bulls.",
-        "I wore number 23.",
-        "I won six NBA championships.",
-        "I became famous for Air Jordan.",
-        "I am considered one of basketball's greatest players."
-    ]
+name:"AB de Villiers",
+category:"🏏 Cricket",
+clues:[
+"I am South African.",
+"I played international cricket.",
+"I became famous in the IPL.",
+"I played for Royal Challengers Bengaluru.",
+"I was nicknamed Mr. 360."
+]
 },
 
 {
-    name: "LeBron James",
-    category: "🏀 Basketball",
-    clues: [
-        "I was born in Ohio.",
-        "I entered the NBA directly from high school.",
-        "I played for Cleveland.",
-        "I won championships with multiple teams.",
-        "I am one of basketball's greatest scorers."
-    ]
+name:"Shane Warne",
+category:"🏏 Cricket",
+clues:[
+"I was Australian.",
+"I was a leg-spinner.",
+"I played for Australia.",
+"I became famous for the Ball of the Century.",
+"I was one of cricket's greatest spinners."
+]
 },
 
 {
-    name: "Stephen Curry",
-    category: "🏀 Basketball",
-    clues: [
-        "I play for the Golden State Warriors.",
-        "I am famous for three-point shooting.",
-        "I won multiple NBA championships.",
-        "My father was also an NBA player.",
-        "I helped revolutionize three-point shooting."
-    ]
+name:"Ravindra Jadeja",
+category:"🏏 Cricket",
+clues:[
+"I play for India.",
+"I am a left-handed batter.",
+"I am also a left-arm spinner.",
+"I am known for excellent fielding.",
+"I have played for Chennai Super Kings."
+]
 },
 
 {
-    name: "Kobe Bryant",
-    category: "🏀 Basketball",
-    clues: [
-        "I played for the Los Angeles Lakers.",
-        "I wore numbers 8 and 24.",
-        "I won five NBA championships.",
-        "I was nicknamed the Black Mamba.",
-        "I became one of basketball's most famous players."
-    ]
+name:"Hardik Pandya",
+category:"🏏 Cricket",
+clues:[
+"I am an Indian all-rounder.",
+"I became famous through the IPL.",
+"I played for Mumbai Indians.",
+"I am known for powerful hitting.",
+"I have captained an IPL team."
+]
 },
 
 {
-    name: "Shaquille O'Neal",
-    category: "🏀 Basketball",
-    clues: [
-        "I was one of the NBA's biggest stars.",
-        "I played for the Lakers.",
-        "I won four NBA championships.",
-        "I was known for my incredible size.",
-        "I later became a television personality."
-    ]
-},
-
-
-/* 🎾 TENNIS */
-
-{
-    name: "Roger Federer",
-    category: "🎾 Tennis",
-    clues: [
-        "I am Swiss.",
-        "I won multiple Wimbledon titles.",
-        "I was part of tennis's Big Three.",
-        "My playing style was known for elegance.",
-        "I won 20 Grand Slam singles titles."
-    ]
+name:"Yuvraj Singh",
+category:"🏏 Cricket",
+clues:[
+"I played for India.",
+"I was a left-handed batter.",
+"I hit six sixes in one over.",
+"I played an important role in India's 2011 World Cup win.",
+"I was known for powerful hitting."
+]
 },
 
 {
-    name: "Rafael Nadal",
-    category: "🎾 Tennis",
-    clues: [
-        "I am Spanish.",
-        "I became famous on clay courts.",
-        "I dominated the French Open.",
-        "I was part of the Big Three.",
-        "I won 14 French Open titles."
-    ]
+name:"Sourav Ganguly",
+category:"🏏 Cricket",
+clues:[
+"I played for India.",
+"I was a left-handed batter.",
+"I captained India.",
+"I was known for aggressive captaincy.",
+"I later became BCCI president."
+]
+},
+
+/* BASKETBALL */
+
+{
+name:"Michael Jordan",
+category:"🏀 Basketball",
+clues:[
+"I played for the Chicago Bulls.",
+"I wore number 23.",
+"I won six NBA championships.",
+"I became famous for Air Jordan.",
+"I am considered one of basketball's greatest players."
+]
 },
 
 {
-    name: "Novak Djokovic",
-    category: "🎾 Tennis",
-    clues: [
-        "I am Serbian.",
-        "I became part of tennis's Big Three.",
-        "I have won multiple Australian Open titles.",
-        "I have won all four Grand Slam tournaments.",
-        "I am one of tennis's most successful players."
-    ]
+name:"LeBron James",
+category:"🏀 Basketball",
+clues:[
+"I was born in Ohio.",
+"I entered the NBA from high school.",
+"I played for Cleveland.",
+"I won championships with multiple teams.",
+"I am one of basketball's greatest scorers."
+]
 },
 
 {
-    name: "Serena Williams",
-    category: "🎾 Tennis",
-    clues: [
-        "I am American.",
-        "I trained with my sister Venus.",
-        "I won numerous Grand Slam titles.",
-        "I spent years ranked number one.",
-        "I am considered one of tennis's greatest players."
-    ]
+name:"Stephen Curry",
+category:"🏀 Basketball",
+clues:[
+"I play for Golden State.",
+"I am famous for three-point shooting.",
+"I won multiple NBA championships.",
+"My father was also an NBA player.",
+"I helped revolutionize three-point shooting."
+]
 },
 
 {
-    name: "Carlos Alcaraz",
-    category: "🎾 Tennis",
-    clues: [
-        "I am Spanish.",
-        "I became a professional tennis player as a teenager.",
-        "I reached world number one at a young age.",
-        "I have won Grand Slam titles.",
-        "I am known for powerful athletic tennis."
-    ]
-},
-
-
-/* 🏎️ FORMULA 1 */
-
-{
-    name: "Lewis Hamilton",
-    category: "🏎️ Formula 1",
-    clues: [
-        "I am British.",
-        "I made my F1 debut with McLaren.",
-        "I won my first championship in 2008.",
-        "I won multiple championships with Mercedes.",
-        "I became one of F1's most successful drivers."
-    ]
+name:"Kobe Bryant",
+category:"🏀 Basketball",
+clues:[
+"I played for the Lakers.",
+"I wore numbers 8 and 24.",
+"I won five NBA championships.",
+"I was nicknamed the Black Mamba.",
+"I became one of basketball's most famous players."
+]
 },
 
 {
-    name: "Max Verstappen",
-    category: "🏎️ Formula 1",
-    clues: [
-        "I am Dutch.",
-        "I made my F1 debut as a teenager.",
-        "I drive for Red Bull Racing.",
-        "I became a world champion.",
-        "I am known for aggressive racing."
-    ]
+name:"Shaquille O'Neal",
+category:"🏀 Basketball",
+clues:[
+"I was one of the NBA's biggest stars.",
+"I played for the Lakers.",
+"I won four NBA championships.",
+"I was known for my incredible size.",
+"I later became a television personality."
+]
+},
+
+/* TENNIS */
+
+{
+name:"Roger Federer",
+category:"🎾 Tennis",
+clues:[
+"I am Swiss.",
+"I won multiple Wimbledon titles.",
+"I was part of tennis's Big Three.",
+"My playing style was known for elegance.",
+"I won 20 Grand Slam singles titles."
+]
 },
 
 {
-    name: "Charles Leclerc",
-    category: "🏎️ Formula 1",
-    clues: [
-        "I am from Monaco.",
-        "I drive for Ferrari.",
-        "I won the GP3 championship.",
-        "I became a Ferrari race winner.",
-        "I am known for strong qualifying performances."
-    ]
+name:"Rafael Nadal",
+category:"🎾 Tennis",
+clues:[
+"I am Spanish.",
+"I became famous on clay courts.",
+"I dominated the French Open.",
+"I was part of the Big Three.",
+"I won 14 French Open titles."
+]
 },
 
 {
-    name: "Fernando Alonso",
-    category: "🏎️ Formula 1",
-    clues: [
-        "I am Spanish.",
-        "I won two F1 championships.",
-        "I won championships with Renault.",
-        "I have raced for Ferrari.",
-        "I also won the 24 Hours of Le Mans."
-    ]
+name:"Novak Djokovic",
+category:"🎾 Tennis",
+clues:[
+"I am Serbian.",
+"I became part of tennis's Big Three.",
+"I have won multiple Australian Open titles.",
+"I have won all four Grand Slam tournaments.",
+"I am one of tennis's most successful players."
+]
 },
 
 {
-    name: "Ayrton Senna",
-    category: "🏎️ Formula 1",
-    clues: [
-        "I was Brazilian.",
-        "I won three F1 championships.",
-        "I raced for McLaren.",
-        "I was famous for my qualifying speed.",
-        "I became one of Formula 1's most legendary drivers."
-    ]
-},
-
-
-/* 🥊 BOXING */
-
-{
-    name: "Muhammad Ali",
-    category: "🥊 Boxing",
-    clues: [
-        "I was born in Kentucky.",
-        "I became an Olympic gold medalist.",
-        "I became a heavyweight world champion.",
-        "I was famous for saying 'I am the greatest'.",
-        "I was known for my speed and confidence."
-    ]
+name:"Serena Williams",
+category:"🎾 Tennis",
+clues:[
+"I am American.",
+"I trained with my sister Venus.",
+"I won numerous Grand Slam titles.",
+"I spent years ranked number one.",
+"I am considered one of tennis's greatest players."
+]
 },
 
 {
-    name: "Mike Tyson",
-    category: "🥊 Boxing",
-    clues: [
-        "I became a heavyweight boxing champion.",
-        "I became champion at a very young age.",
-        "I was known for powerful knockouts.",
-        "My nickname was Iron Mike.",
-        "I became one of boxing's most famous figures."
-    ]
+name:"Carlos Alcaraz",
+category:"🎾 Tennis",
+clues:[
+"I am Spanish.",
+"I became a professional as a teenager.",
+"I reached world number one at a young age.",
+"I have won Grand Slam titles.",
+"I am known for powerful athletic tennis."
+]
 },
 
 {
-    name: "Floyd Mayweather",
-    category: "🥊 Boxing",
-    clues: [
-        "I am American.",
-        "I became a professional boxer.",
-        "I was known for defensive boxing.",
-        "I retired with an undefeated professional record.",
-        "I was nicknamed Money."
-    ]
+name:"Venus Williams",
+category:"🎾 Tennis",
+clues:[
+"I am American.",
+"My sister is also a famous tennis player.",
+"I won multiple Grand Slam titles.",
+"I have been ranked world number one.",
+"I have competed at the Olympics."
+]
 },
 
-
-/* 🏃 ATHLETICS */
-
-{
-    name: "Usain Bolt",
-    category: "🏃 Athletics",
-    clues: [
-        "I am Jamaican.",
-        "I specialize in sprinting.",
-        "I competed in the 100m and 200m.",
-        "I won multiple Olympic gold medals.",
-        "I became known as the fastest man alive."
-    ]
-},
+/* F1 */
 
 {
-    name: "Michael Phelps",
-    category: "🏊 Swimming",
-    clues: [
-        "I am American.",
-        "I compete in swimming.",
-        "I won an enormous number of Olympic medals.",
-        "I specialize in multiple swimming events.",
-        "I am the most decorated Olympian."
-    ]
-},
-
-
-/* 🏏 MORE CRICKET */
-
-{
-    name: "Ravindra Jadeja",
-    category: "🏏 Cricket",
-    clues: [
-        "I play cricket for India.",
-        "I am a left-handed batter.",
-        "I am also a left-arm spinner.",
-        "I am known for excellent fielding.",
-        "I have played for Chennai Super Kings."
-    ]
+name:"Lewis Hamilton",
+category:"🏎️ Formula 1",
+clues:[
+"I am British.",
+"I made my F1 debut with McLaren.",
+"I won my first championship in 2008.",
+"I won multiple championships with Mercedes.",
+"I became one of F1's most successful drivers."
+]
 },
 
 {
-    name: "Hardik Pandya",
-    category: "🏏 Cricket",
-    clues: [
-        "I am an Indian all-rounder.",
-        "I became famous through the IPL.",
-        "I played for Mumbai Indians.",
-        "I am known for powerful hitting.",
-        "I have captained an IPL team."
-    ]
+name:"Max Verstappen",
+category:"🏎️ Formula 1",
+clues:[
+"I am Dutch.",
+"I made my F1 debut as a teenager.",
+"I drive for Red Bull Racing.",
+"I became a world champion.",
+"I am known for aggressive racing."
+]
 },
 
 {
-    name: "Yuvraj Singh",
-    category: "🏏 Cricket",
-    clues: [
-        "I played for India.",
-        "I was a left-handed batter.",
-        "I hit six sixes in one over at the 2007 T20 World Cup.",
-        "I played an important role in India's 2011 World Cup win.",
-        "I was known for powerful hitting."
-    ]
+name:"Charles Leclerc",
+category:"🏎️ Formula 1",
+clues:[
+"I am from Monaco.",
+"I drive for Ferrari.",
+"I won the GP3 championship.",
+"I became a Ferrari race winner.",
+"I am known for strong qualifying performances."
+]
 },
 
 {
-    name: "Sourav Ganguly",
-    category: "🏏 Cricket",
-    clues: [
-        "I played for India.",
-        "I was a left-handed batter.",
-        "I captained India.",
-        "I was known for aggressive captaincy.",
-        "I became president of the BCCI."
-    ]
-},
-
-
-/* 🎮 GAMING */
-
-{
-    name: "Ninja",
-    category: "🎮 Gaming",
-    clues: [
-        "I am an American streamer.",
-        "I became famous playing Fortnite.",
-        "I became one of gaming's biggest creators.",
-        "I am known for my blue hair.",
-        "My real name is Tyler Blevins."
-    ]
+name:"Fernando Alonso",
+category:"🏎️ Formula 1",
+clues:[
+"I am Spanish.",
+"I won two F1 championships.",
+"I won championships with Renault.",
+"I have raced for Ferrari.",
+"I also won the 24 Hours of Le Mans."
+]
 },
 
 {
-    name: "PewDiePie",
-    category: "🎮 Gaming",
-    clues: [
-        "I am Swedish.",
-        "I became famous through YouTube.",
-        "I started with gaming videos.",
-        "My real name is Felix Kjellberg.",
-        "I became one of YouTube's biggest creators."
-    ]
+name:"Ayrton Senna",
+category:"🏎️ Formula 1",
+clues:[
+"I was Brazilian.",
+"I won three F1 championships.",
+"I raced for McLaren.",
+"I was famous for qualifying speed.",
+"I became one of F1's most legendary drivers."
+]
+},
+
+/* BOXING */
+
+{
+name:"Muhammad Ali",
+category:"🥊 Boxing",
+clues:[
+"I was born in Kentucky.",
+"I became an Olympic gold medalist.",
+"I became a heavyweight world champion.",
+"I was famous for my confidence.",
+"I called myself the greatest."
+]
+},
+
+{
+name:"Mike Tyson",
+category:"🥊 Boxing",
+clues:[
+"I became a heavyweight champion.",
+"I became champion at a very young age.",
+"I was known for powerful knockouts.",
+"My nickname was Iron Mike.",
+"I became one of boxing's most famous figures."
+]
+},
+
+{
+name:"Floyd Mayweather",
+category:"🥊 Boxing",
+clues:[
+"I am American.",
+"I became a professional boxer.",
+"I was known for defensive boxing.",
+"I retired undefeated.",
+"I was nicknamed Money."
+]
+},
+
+/* OTHER SPORTS */
+
+{
+name:"Usain Bolt",
+category:"🏃 Athletics",
+clues:[
+"I am Jamaican.",
+"I specialize in sprinting.",
+"I competed in the 100m and 200m.",
+"I won multiple Olympic gold medals.",
+"I became known as the fastest man alive."
+]
+},
+
+{
+name:"Michael Phelps",
+category:"🏊 Swimming",
+clues:[
+"I am American.",
+"I compete in swimming.",
+"I won an enormous number of Olympic medals.",
+"I competed in multiple swimming events.",
+"I am the most decorated Olympian."
+]
+},
+
+{
+name:"Simone Biles",
+category:"🤸 Gymnastics",
+clues:[
+"I am American.",
+"I compete in gymnastics.",
+"I have won multiple Olympic medals.",
+"I am famous for difficult gymnastics skills.",
+"I am one of the most decorated gymnasts."
+]
+},
+
+{
+name:"Tiger Woods",
+category:"⛳ Golf",
+clues:[
+"I am American.",
+"I became a professional golfer.",
+"I won multiple major championships.",
+"I became one of golf's biggest stars.",
+"I won the Masters multiple times."
+]
+},
+
+/* MUSIC */
+
+{
+name:"Taylor Swift",
+category:"🎵 Music",
+clues:[
+"I was born in Pennsylvania.",
+"I started in country music.",
+"I became a global pop star.",
+"I write many of my own songs.",
+"My albums include 1989 and Midnights."
+]
+},
+
+{
+name:"Michael Jackson",
+category:"🎵 Music",
+clues:[
+"I began performing as a child.",
+"I was part of a famous family group.",
+"I released Thriller.",
+"I became famous for the moonwalk.",
+"I was known as the King of Pop."
+]
+},
+
+{
+name:"Ed Sheeran",
+category:"🎵 Music",
+clues:[
+"I am British.",
+"I became famous as a singer-songwriter.",
+"I often perform with an acoustic guitar.",
+"I released Shape of You.",
+"I have distinctive red hair."
+]
+},
+
+{
+name:"Adele",
+category:"🎵 Music",
+clues:[
+"I am British.",
+"I am known for powerful vocals.",
+"I released Someone Like You.",
+"I have won multiple Grammy Awards.",
+"My albums include 21 and 25."
+]
+},
+
+{
+name:"Drake",
+category:"🎵 Music",
+clues:[
+"I am Canadian.",
+"I began my career as an actor.",
+"I became a major rapper.",
+"I released God's Plan.",
+"I am known for mixing rap and singing."
+]
+},
+
+{
+name:"Beyonce",
+category:"🎵 Music",
+clues:[
+"I am American.",
+"I became famous as part of Destiny's Child.",
+"I later became a solo artist.",
+"I released Lemonade.",
+"I have won many Grammy Awards."
+]
+},
+
+/* MOVIES */
+
+{
+name:"Dwayne Johnson",
+category:"🎬 Movies",
+clues:[
+"I became famous as a wrestler.",
+"My wrestling nickname was The Rock.",
+"I became a Hollywood actor.",
+"I starred in Jumanji.",
+"I am known for my muscular appearance."
+]
+},
+
+{
+name:"Leonardo DiCaprio",
+category:"🎬 Movies",
+clues:[
+"I am an American actor.",
+"I starred in Titanic.",
+"I worked with Martin Scorsese.",
+"I appeared in Inception.",
+"I won an Academy Award for The Revenant."
+]
+},
+
+{
+name:"Tom Holland",
+category:"🎬 Movies",
+clues:[
+"I am British.",
+"I became famous playing Spider-Man.",
+"I appeared in Marvel movies.",
+"I began performing as a child.",
+"I have played Peter Parker."
+]
+},
+
+{
+name:"Robert Downey Jr.",
+category:"🎬 Movies",
+clues:[
+"I am an American actor.",
+"I played Tony Stark.",
+"I appeared in Marvel movies.",
+"I starred in Iron Man.",
+"I became one of Hollywood's biggest stars."
+]
+},
+
+{
+name:"Chris Hemsworth",
+category:"🎬 Movies",
+clues:[
+"I am Australian.",
+"I played Thor.",
+"I appeared in Marvel movies.",
+"I am known for my action roles.",
+"I have played a superhero with a hammer."
+]
+},
+
+/* TECHNOLOGY */
+
+{
+name:"Steve Jobs",
+category:"💻 Technology",
+clues:[
+"I co-founded a technology company.",
+"I helped create the Macintosh.",
+"I returned to my company after leaving.",
+"I helped launch the iPhone.",
+"I was famous for product presentations."
+]
+},
+
+{
+name:"Bill Gates",
+category:"💻 Technology",
+clues:[
+"I co-founded Microsoft.",
+"I became one of the world's richest people.",
+"I helped develop the personal computer industry.",
+"I became a major philanthropist.",
+"I am known for Microsoft Windows."
+]
+},
+
+{
+name:"Elon Musk",
+category:"🚀 Technology",
+clues:[
+"I was born in South Africa.",
+"I became involved in online payment technology.",
+"I founded SpaceX.",
+"I became closely associated with Tesla.",
+"I am known for ambitious technology projects."
+]
+},
+
+{
+name:"Mark Zuckerberg",
+category:"💻 Technology",
+clues:[
+"I attended Harvard.",
+"I helped create Facebook.",
+"I became one of the world's youngest billionaires.",
+"I lead Meta.",
+"I am associated with social media."
+]
+},
+
+/* GAMING */
+
+{
+name:"Ninja",
+category:"🎮 Gaming",
+clues:[
+"I am an American streamer.",
+"I became famous playing Fortnite.",
+"I became one of gaming's biggest creators.",
+"I became known for my blue hair.",
+"My real name is Tyler Blevins."
+]
+},
+
+{
+name:"PewDiePie",
+category:"🎮 Gaming",
+clues:[
+"I am Swedish.",
+"I became famous through YouTube.",
+"I started with gaming videos.",
+"My real name is Felix Kjellberg.",
+"I became one of YouTube's biggest creators."
+]
 }
 
 ];
+
+
+/* =====================================================
+   GAME VARIABLES
+===================================================== */
+
+let currentPerson = null;
+let score = 0;
+let streak = 0;
+let lives = 3;
+let round = 0;
+let clueNumber = 0;
+let answered = false;
+
+
+/* =====================================================
+   START GAME
+===================================================== */
+
+function startGame() {
+
+    score = 0;
+    streak = 0;
+    lives = 3;
+    round = 0;
+
+    document.getElementById("startScreen")
+        .classList.add("hidden");
+
+    document.getElementById("gameOver")
+        .classList.add("hidden");
+
+    document.getElementById("gameScreen")
+        .classList.remove("hidden");
+
+    updateStats();
+
+    nextRound();
+}
+
+
+/* =====================================================
+   NEXT ROUND
+===================================================== */
+
+function nextRound() {
+
+    if (round >= 10) {
+        endGame();
+        return;
+    }
+
+    round++;
+
+    clueNumber = 0;
+    answered = false;
+
+    document.getElementById("answer").value = "";
+    document.getElementById("answer").disabled = false;
+
+    document.getElementById("message")
+        .textContent = "";
+
+    document.getElementById("nextButton")
+        .classList.add("hidden");
+
+    currentPerson =
+        people[Math.floor(Math.random() * people.length)];
+
+    document.getElementById("category")
+        .textContent = currentPerson.category;
+
+    document.getElementById("clues")
+        .innerHTML = "";
+
+    showClue();
+
+    updateStats();
+
+    document.getElementById("answer").focus();
+}
+
+
+/* =====================================================
+   SHOW NEXT CLUE
+===================================================== */
+
+function showClue() {
+
+    if (clueNumber >= 5) {
+        return;
+    }
+
+    const clue = document.createElement("div");
+
+    clue.className = "clue";
+
+    clue.textContent =
+        "🧩 Clue " +
+        (clueNumber + 1) +
+        ": " +
+        currentPerson.clues[clueNumber];
+
+    document.getElementById("clues")
+        .appendChild(clue);
+
+    clueNumber++;
+}
+
+
+/* =====================================================
+   GUESS
+===================================================== */
+
+function guess() {
+
+    if (answered) {
+        return;
+    }
+
+    const input =
+        document.getElementById("answer");
+
+    const userAnswer =
+        input.value.trim().toLowerCase();
+
+    if (userAnswer === "") {
+
+        document.getElementById("message")
+            .textContent = "Type your answer first!";
+
+        return;
+    }
+
+    const correct =
+        currentPerson.name.toLowerCase();
+
+    if (
+        userAnswer === correct ||
+        correct.includes(userAnswer)
+    ) {
+
+        answered = true;
+
+        let points;
+
+        if (clueNumber === 1) {
+            points = 500;
+        } else if (clueNumber === 2) {
+            points = 400;
+        } else if (clueNumber === 3) {
+            points = 300;
+        } else if (clueNumber === 4) {
+            points = 200;
+        } else {
+            points = 100;
+        }
+
+        const streakBonus = streak * 50;
+
+        const total = points + streakBonus;
+
+        score += total;
+
+        streak++;
+
+        document.getElementById("message")
+            .textContent =
+            "🔥 CORRECT! +" + total + " points!";
+
+        input.disabled = true;
+
+        document.getElementById("nextButton")
+            .classList.remove("hidden");
+
+        updateStats();
+
+    } else {
+
+        lives--;
+
+        streak = 0;
+
+        document.getElementById("message")
+            .textContent =
+            "❌ Wrong! Try again.";
+
+        updateStats();
+
+        if (lives <= 0) {
+            endGame();
+        }
+    }
+}
+
+
+/* =====================================================
+   STATS
+===================================================== */
+
+function updateStats() {
+
+    document.getElementById("score")
+        .textContent = score;
+
+    document.getElementById("streak")
+        .textContent = streak;
+
+    document.getElementById("lives")
+        .textContent = lives;
+
+    document.getElementById("round")
+        .textContent = round;
+}
+
+
+/* =====================================================
+   GAME OVER
+===================================================== */
+
+function endGame() {
+
+    document.getElementById("gameScreen")
+        .classList.add("hidden");
+
+    document.getElementById("gameOver")
+        .classList.remove("hidden");
+
+    let best =
+        Number(localStorage.getItem("whoAmIBest")) || 0;
+
+    if (score > best) {
+        best = score;
+        localStorage.setItem("whoAmIBest", best);
+    }
+
+    document.getElementById("finalScore")
+        .textContent = score;
+
+    document.getElementById("bestScore")
+        .textContent = best;
+}
+
+
+/* =====================================================
+   ENTER KEY
+===================================================== */
+
+document.getElementById("answer")
+.addEventListener("keydown", function(event) {
+
+    if (event.key === "Enter") {
+        guess();
+    }
+
+});
+
+</script>
+
+</body>
+</html>
